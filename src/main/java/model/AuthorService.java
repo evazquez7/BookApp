@@ -5,6 +5,7 @@
  */
 package model;
 
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -14,24 +15,39 @@ import java.util.List;
  *
  * @author Emilio
  */
-public class AuthorService {
+public class AuthorService  {
     
-
-   private List<Author> authors;
+    private AuthorDaoStrategy dao;
+    
+    public AuthorService(AuthorDaoStrategy dao){
+        this.dao = dao;
+    }
+   
    
 
-    public List<Author> getAuthors() {
-        return authors;
+    public List<Author> getAuthorsList() 
+            throws ClassNotFoundException, SQLException {
+        
+        return dao.getAuthorList();    
     }
-
-   public AuthorService() {
-       
-       authors = new ArrayList<>();
-       
-       authors.add(new Author(1,"Juan Carrillo", new Date()));
-       authors.add(new Author(2,"Edgar Perez", new Date()));
-       authors.add(new Author(3, "Eric Corona", new Date()));
-
-   }
-  
+    
+    public int deleteAuthor() 
+            throws ClassNotFoundException, SQLException{
+        
+        return dao.deleteAuthor();
+    }
+            
+    public static void main(String[] args) 
+            throws ClassNotFoundException, SQLException {
+         
+        AuthorDaoStrategy dao = new AuthorDao(new MySqlDbStrategy(),
+                 "com.mysql.jdbc.Driver",
+                 "jdbc:mysql://localhost:3306/book?useSSL=false","root","admin");
+         
+         AuthorService service = new AuthorService(dao);
+         List<Author> authors = service.getAuthorsList();
+         System.out.println(authors);
+         System.out.println(service.deleteAuthor()+ " author deleted");
+    }
 }
+

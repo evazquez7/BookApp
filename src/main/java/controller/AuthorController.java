@@ -15,7 +15,10 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import model.Author;
+import model.AuthorDao;
+import model.AuthorDaoStrategy;
 import model.AuthorService;
+import model.MySqlDbStrategy;
 
 /**
  *
@@ -34,14 +37,24 @@ public class AuthorController extends HttpServlet {
      * @throws IOException if an I/O error occurs
      */
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
+            throws ServletException, IOException{
         response.setContentType("text/html;charset=UTF-8");
-       
-        AuthorService authorService = new AuthorService();
-       
-        List<Author> authors = authorService.getAuthors();
-        request.setAttribute("authors",authors);
         
+        AuthorDaoStrategy dao = new AuthorDao(new MySqlDbStrategy(),
+                "com.mysql.jdbc.Driver",
+                "jdbc:mysql://localhost:3306/book?useSSL=false","root","admin");
+        
+        
+        AuthorService authorService = new AuthorService(dao);
+       try {
+           
+       
+        List<Author> authors = authorService.getAuthorsList();
+        request.setAttribute("authors",authors);
+       } catch(Exception e) {
+        request.setAttribute("authors","Invalid");   
+       } 
+       
         RequestDispatcher view = request.getRequestDispatcher("/AuthorsTable.jsp"); 
         view.forward(request, response);
     }
