@@ -2,6 +2,7 @@ package model;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
@@ -10,6 +11,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.StringJoiner;
 
 /**
  *
@@ -54,13 +56,15 @@ public class MySqlDbStrategy implements DbStrategy {
         
         return records;
     }
+    
     @Override
-    public Map<String,Object> findRecord(String tableName,String columnName, int primaryKey)
+    public Map<String,Object> findRecord(String tableName,String columnName, Object primaryKeyValue)
             throws SQLException{
         
-        String sql ="SELECT * FROM " + tableName + " WHERE " + columnName +  " = " +primaryKey;
-        Statement stmt = conn.createStatement();
-        ResultSet rs = stmt.executeQuery(sql);
+       PreparedStatement stmt = buildFindStatement(tableName,columnName,primaryKeyValue);
+       
+        
+        ResultSet rs = stmt.executeQuery();
         Map<String,Object> record = new LinkedHashMap<>();
         ResultSetMetaData rsmd = rs.getMetaData();
         int colCount = rsmd.getColumnCount();
@@ -76,14 +80,70 @@ public class MySqlDbStrategy implements DbStrategy {
         return record;
     }
     
+    public void insertRecord(String tableName,List<String> colNamesList, List<Object> colValuesList) throws SQLException{
+        List<String> colNames = colNamesList; 
+        List<Object> colValues = colValuesList;
+        StringJoiner sjColNames = new StringJoiner("," , " (" , ")");
+        StringJoiner sjColValues = new StringJoiner(",", " (", ")");
+        
+        for(int i=0; i < colNames.size(); i++){
+           sjColNames.add(colNames.get(i));
+           
+        }
+        
+        for(int i=0; i < colValues.size();i++ ){
+            sjColValues.add(colValues.get(i).toString());
+        }
+        
+        String sql = "INSERT INTO " + tableName + sjColNames + " VALUES" + sjColValues;
+        
+        PreparedStatement stmt = conn.prepareStatement(sql); 
+        
+        
+        
+        stmt.executeUpdate();
+        
+        
+        
+    }
+    
     @Override
-    public int deleteRecord (String tableName,String columnName ,int primaryKey ) 
+    public void deleteById(String tableName, String primaryKeyName, Object primaryKeyValue) 
+            throws SQLException{
+        PreparedStatement stmt = buildDeleteStatement(tableName,primaryKeyName,primaryKeyValue);
+        
+        
+        stmt.executeUpdate();
+    }
+    
+//   
+//    public int deleteRecord (String tableName,String columnName ,int primaryKey ) 
+//            throws SQLException{
+//        
+//        String sql = "DELETE FROM " + tableName + " WHERE " + columnName +" = " +primaryKey;
+//        Statement stmt = conn.createStatement();
+//        int rs = stmt.executeUpdate(sql);
+//        return rs;
+//    }
+    
+    private PreparedStatement buildFindStatement(String tableName, String primaryKeyName, Object primaryKeyValue) throws SQLException{
+         String sql ="SELECT * FROM " + tableName + " WHERE " + primaryKeyName +  " =? ";
+        
+        PreparedStatement stmt = conn.prepareStatement(sql);
+        stmt.setObject(1, primaryKeyValue);
+        
+        return stmt;
+    }
+    
+    private PreparedStatement buildDeleteStatement(String tableName, String primaryKeyName, Object primaryKeyValue) 
             throws SQLException{
         
-        String sql = "DELETE FROM " + tableName + " WHERE " + columnName +" = " +primaryKey;
-        Statement stmt = conn.createStatement();
-        int rs = stmt.executeUpdate(sql);
-        return rs;
+        String sql = "DELETE FROM " + tableName + " WHERE " +primaryKeyName + " =? ";
+        
+        PreparedStatement stmt = conn.prepareStatement(sql);
+        stmt.setObject(1, primaryKeyValue);
+        
+        return stmt;
     }
     
     
@@ -95,9 +155,10 @@ public class MySqlDbStrategy implements DbStrategy {
         List<Map<String,Object>> records = db.findAllRecords("author", 500);
         System.out.println(records);
         
-        System.out.println(db.findRecord("author", "author_id",3 ));
+       // System.out.println(db.findRecord("author", "author_id",3 ));
         
-        System.out.println("You have deleted "+ db.deleteRecord("author", "author_id", 1)+ " record");
+        db.deleteById("author", "author_id", 4);
+        System.out.println(db.findRecord("author", "author_id", 5));
         
         
         db.closeConnection();

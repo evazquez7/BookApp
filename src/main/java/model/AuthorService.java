@@ -31,14 +31,14 @@ public class AuthorService  {
         return dao.getAuthorList();    
     }
     
-    public int deleteAuthor() 
-            throws ClassNotFoundException, SQLException{
+    public void deleteAuthor(String id) 
+            throws Exception{
         
-        return dao.deleteAuthor();
+        dao.deleteAuthorById(id);
     }
             
     public static void main(String[] args) 
-            throws ClassNotFoundException, SQLException {
+            throws Exception {
          
         AuthorDaoStrategy dao = new AuthorDao(new MySqlDbStrategy(),
                  "com.mysql.jdbc.Driver",
@@ -47,7 +47,7 @@ public class AuthorService  {
          AuthorService service = new AuthorService(dao);
          List<Author> authors = service.getAuthorsList();
          System.out.println(authors);
-         System.out.println(service.deleteAuthor()+ " author deleted");
+         service.deleteAuthor("4");
     }
 }
 

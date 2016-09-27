@@ -76,16 +76,27 @@ public class AuthorDao implements AuthorDaoStrategy {
     }
     
     @Override
-    public int deleteAuthor()
-            throws ClassNotFoundException, SQLException {
-        
+    public void deleteAuthorById(String id) throws Exception{
         
         db.openConnection(driverClass, url, userName, password);
-        int recordDeleted = db.deleteRecord("author", "author_id", 2);
+        Integer  primaryKeyValue = Integer.parseInt(id);
+        db.deleteById("author", "author_id", primaryKeyValue);
+        
         db.closeConnection();
         
-      return  recordDeleted;
-    } 
+    }
+    
+//    @Override
+//    public int deleteAuthor()
+//            throws ClassNotFoundException, SQLException {
+//        
+//        
+//        db.openConnection(driverClass, url, userName, password);
+//        int recordDeleted = db.deleteRecord("author", "author_id", 2);
+//        db.closeConnection();
+//        
+//      return  recordDeleted;
+//    } 
     
     public DbStrategy getDb() {
         return db;
@@ -108,6 +119,6 @@ public class AuthorDao implements AuthorDaoStrategy {
         
         
         System.out.println(authorRecord);
-        System.out.println(dao.deleteAuthor() +" author deleted");
+     
     }
 }
