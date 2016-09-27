@@ -54,6 +54,27 @@ public class MySqlDbStrategy implements DbStrategy {
         
         return records;
     }
+    @Override
+    public Map<String,Object> findRecord(String tableName,String columnName, int primaryKey)
+            throws SQLException{
+        
+        String sql ="SELECT * FROM " + tableName + " WHERE " + columnName +  " = " +primaryKey;
+        Statement stmt = conn.createStatement();
+        ResultSet rs = stmt.executeQuery(sql);
+        Map<String,Object> record = new LinkedHashMap<>();
+        ResultSetMetaData rsmd = rs.getMetaData();
+        int colCount = rsmd.getColumnCount();
+        while(rs.next()) {
+         
+         for(int i=0; i< colCount; i++){
+             String colName = rsmd.getColumnName(i+1);
+             Object colData = rs.getObject(colName);
+             record.put(colName, colData);
+         }
+        }
+        
+        return record;
+    }
     
     @Override
     public int deleteRecord (String tableName,String columnName ,int primaryKey ) 
@@ -65,6 +86,8 @@ public class MySqlDbStrategy implements DbStrategy {
         return rs;
     }
     
+    
+    
     public static void main(String[]args) throws ClassNotFoundException, SQLException{
         DbStrategy db = new MySqlDbStrategy();
         
@@ -72,8 +95,11 @@ public class MySqlDbStrategy implements DbStrategy {
         List<Map<String,Object>> records = db.findAllRecords("author", 500);
         System.out.println(records);
         
+        System.out.println(db.findRecord("author", "author_id",3 ));
         
         System.out.println("You have deleted "+ db.deleteRecord("author", "author_id", 1)+ " record");
+        
+        
         db.closeConnection();
         
         

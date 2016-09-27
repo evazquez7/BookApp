@@ -56,6 +56,24 @@ public class AuthorDao implements AuthorDaoStrategy {
         return authors;
     }
     
+    @Override
+    public List<Author> getSpecificAuthor() throws SQLException, ClassNotFoundException{
+        db.openConnection(driverClass, url, userName, password);
+        Map<String,Object> record = db.findRecord("author", "author_id", 3);
+        List<Author> authorRecord = new ArrayList<>();
+        Author author = new Author();
+        int id =Integer.parseInt(record.get("author_id").toString());
+        author.setAuthorId(id);
+        String name = record.get("author_name").toString();
+        author.setAuthorName(name);
+        Date date = (Date)record.get("date_added");
+        author.setDateAdded(date);
+        authorRecord.add(author);
+        
+        db.closeConnection();
+        
+        return authorRecord;
+    }
     
     @Override
     public int deleteAuthor()
@@ -85,7 +103,11 @@ public class AuthorDao implements AuthorDaoStrategy {
                 "jdbc:mysql://localhost:3306/book?useSSL=false","root","admin");
         
         List<Author> authors = dao.getAuthorList();
+        List<Author> authorRecord = dao.getSpecificAuthor();
         System.out.println(authors);
+        
+        
+        System.out.println(authorRecord);
         System.out.println(dao.deleteAuthor() +" author deleted");
     }
 }

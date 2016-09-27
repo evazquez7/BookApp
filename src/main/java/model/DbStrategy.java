@@ -20,6 +20,7 @@ public interface DbStrategy {
 
     List<Map<String,Object>> findAllRecords(String tableName, int maxRecords) throws SQLException;
     int deleteRecord (String tableName,String columnName ,int primaryKey ) throws SQLException;
+    public Map<String,Object> findRecord(String tableName,String columnName, int primaryKey) throws SQLException;
     void openConnection(String driverClass, String url, String userName, String password) throws ClassNotFoundException, SQLException;
     
 }
