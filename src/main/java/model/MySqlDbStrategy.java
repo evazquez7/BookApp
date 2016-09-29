@@ -80,26 +80,34 @@ public class MySqlDbStrategy implements DbStrategy {
         return record;
     }
     
+    
+    @Override
     public void insertRecord(String tableName,List<String> colNamesList, List<Object> colValuesList) throws SQLException{
+        PreparedStatement stmt = null; 
+        
+        String sql = "INSERT INTO " + tableName;
         List<String> colNames = colNamesList; 
         List<Object> colValues = colValuesList;
-        StringJoiner sjColNames = new StringJoiner("," , " (" , ")");
-        StringJoiner sjColValues = new StringJoiner(",", " (", ")");
+        StringJoiner sjColNames = new StringJoiner(", " , " (" , ") ");
+        StringJoiner sjColValues = new StringJoiner(", ", " (", ") ");
         
         for(int i=0; i < colNames.size(); i++){
            sjColNames.add(colNames.get(i));
            
         }
         
+        sql += sjColNames.toString() + "VALUES";
+        
         for(int i=0; i < colValues.size();i++ ){
-            sjColValues.add(colValues.get(i).toString());
-        }
+          sjColValues.add("?");  
+        }   
+        sql += sjColValues.toString();
         
-        String sql = "INSERT INTO " + tableName + sjColNames + " VALUES" + sjColValues;
-        
-        PreparedStatement stmt = conn.prepareStatement(sql); 
-        
-        
+        stmt = conn.prepareStatement(sql);
+                
+        for (int i = 0; i < colValues.size(); i++){
+            stmt.setObject(i+1, colValues.get(i));    
+        } 
         
         stmt.executeUpdate();
         
@@ -159,6 +167,15 @@ public class MySqlDbStrategy implements DbStrategy {
         
         db.deleteById("author", "author_id", 4);
         System.out.println(db.findRecord("author", "author_id", 5));
+        
+        List<String> colNames = new ArrayList<>();
+        colNames.add("author_name");
+        colNames.add("date_added");
+       
+        List<Object> colValues = new ArrayList<>();
+        colValues.add("Juan Carrillo");
+        colValues.add("2015-12-03");
+        db.insertRecord("author", colNames, colValues);
         
         
         db.closeConnection();

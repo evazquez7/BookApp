@@ -75,6 +75,17 @@ public class AuthorDao implements AuthorDaoStrategy {
         return authorRecord;
     }
     
+    @Override 
+    public void createAuthor(String tableName,List<String> colNames,List<Object> colValues) throws Exception{
+        db.openConnection(driverClass, url, userName, password);
+        
+        
+        db.insertRecord(tableName, colNames, colValues);
+        
+        db.closeConnection();
+        
+    }
+    
     @Override
     public void deleteAuthorById(String id) throws Exception{
         
@@ -108,7 +119,7 @@ public class AuthorDao implements AuthorDaoStrategy {
     
     
     public static void main(String[] args) 
-            throws ClassNotFoundException, SQLException {
+            throws ClassNotFoundException, SQLException, Exception {
         
         AuthorDaoStrategy dao =  new AuthorDao(new MySqlDbStrategy(),"com.mysql.jdbc.Driver",
                 "jdbc:mysql://localhost:3306/book?useSSL=false","root","admin");
@@ -117,6 +128,15 @@ public class AuthorDao implements AuthorDaoStrategy {
         List<Author> authorRecord = dao.getSpecificAuthor();
         System.out.println(authors);
         
+        List<String> colNames = new ArrayList<>();
+        colNames.add("author_name");
+        colNames.add("date_added");
+       
+        List<Object> colValues = new ArrayList<>();
+        colValues.add("Jose Fonseca");
+        colValues.add("2015-12-04");
+        
+        dao.createAuthor("author", colNames, colValues);
         
         System.out.println(authorRecord);
      
