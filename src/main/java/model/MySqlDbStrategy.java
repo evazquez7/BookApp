@@ -83,7 +83,66 @@ public class MySqlDbStrategy implements DbStrategy {
     
     @Override
     public void insertRecord(String tableName,List<String> colNamesList, List<Object> colValuesList) throws SQLException{
-        PreparedStatement stmt = null; 
+         
+        PreparedStatement stmt = buildInsertStatement(tableName,colNamesList,colValuesList);
+        
+        stmt.executeUpdate();
+        
+        
+        
+    }
+    
+    @Override
+    public void UpdateRecord(String tableName, List<String> colNameList, 
+            List<Object> colValueList, String whereField, Object whereValue) throws SQLException{
+        PreparedStatement stmt = null;
+        
+        String sql = "UPDATE " + tableName + " SET ";
+        
+        StringJoiner sjSet = new StringJoiner(", ");
+        
+        for (int i = 0; i < colNameList.size(); i++) {
+            sjSet.add(colNameList.get(i) + "= ?");
+        }
+        
+        sql += sjSet.toString() + " WHERE " + whereField + "= ?";
+//        System.out.println(sql);
+//        System.exit(0);
+        stmt = conn.prepareStatement(sql);
+        
+        for (int i = 0; i < colValueList.size(); i++){
+            stmt.setObject(i+1,colValueList.get(i));
+        }
+        
+        stmt.setObject(colValueList.size()+1, whereValue);
+        
+        
+        
+        
+        
+        stmt.executeUpdate();
+    }
+    
+    @Override
+    public void deleteById(String tableName, String primaryKeyName, Object primaryKeyValue) 
+            throws SQLException{
+        PreparedStatement stmt = buildDeleteStatement(tableName,primaryKeyName,primaryKeyValue);
+        
+        
+        stmt.executeUpdate();
+    }
+
+//   
+//    public int deleteRecord (String tableName,String columnName ,int primaryKey ) 
+//            throws SQLException{
+//        
+//        String sql = "DELETE FROM " + tableName + " WHERE " + columnName +" = " +primaryKey;
+//        Statement stmt = conn.createStatement();
+//        int rs = stmt.executeUpdate(sql);
+//        return rs;
+//    }
+    private PreparedStatement buildInsertStatement(String tableName,List<String> colNamesList, List<Object> colValuesList) throws SQLException {
+        PreparedStatement stmt = null;
         
         String sql = "INSERT INTO " + tableName;
         List<String> colNames = colNamesList; 
@@ -98,8 +157,8 @@ public class MySqlDbStrategy implements DbStrategy {
         
         sql += sjColNames.toString() + "VALUES";
         
-        for(int i=0; i < colValues.size();i++ ){
-          sjColValues.add("?");  
+        for (Object colValue : colValues) {
+            sjColValues.add("?");
         }   
         sql += sjColValues.toString();
         
@@ -109,30 +168,9 @@ public class MySqlDbStrategy implements DbStrategy {
             stmt.setObject(i+1, colValues.get(i));    
         } 
         
-        stmt.executeUpdate();
         
-        
-        
+        return stmt;
     }
-    
-    @Override
-    public void deleteById(String tableName, String primaryKeyName, Object primaryKeyValue) 
-            throws SQLException{
-        PreparedStatement stmt = buildDeleteStatement(tableName,primaryKeyName,primaryKeyValue);
-        
-        
-        stmt.executeUpdate();
-    }
-    
-//   
-//    public int deleteRecord (String tableName,String columnName ,int primaryKey ) 
-//            throws SQLException{
-//        
-//        String sql = "DELETE FROM " + tableName + " WHERE " + columnName +" = " +primaryKey;
-//        Statement stmt = conn.createStatement();
-//        int rs = stmt.executeUpdate(sql);
-//        return rs;
-//    }
     
     private PreparedStatement buildFindStatement(String tableName, String primaryKeyName, Object primaryKeyValue) throws SQLException{
          String sql ="SELECT * FROM " + tableName + " WHERE " + primaryKeyName +  " =? ";
@@ -165,17 +203,20 @@ public class MySqlDbStrategy implements DbStrategy {
         
        // System.out.println(db.findRecord("author", "author_id",3 ));
         
-        db.deleteById("author", "author_id", 4);
-        System.out.println(db.findRecord("author", "author_id", 5));
+//        db.deleteById("author", "author_id", 2);
+//        System.out.println(db.findRecord("author", "author_id", 7));
         
         List<String> colNames = new ArrayList<>();
         colNames.add("author_name");
         colNames.add("date_added");
+        
        
         List<Object> colValues = new ArrayList<>();
-        colValues.add("Juan Carrillo");
-        colValues.add("2015-12-03");
-        db.insertRecord("author", colNames, colValues);
+        colValues.add("Jose El Cua");
+        colValues.add("2000-01-01");
+        
+        
+        db.UpdateRecord("author", colNames, colValues,"author_id", 8);
         
         
         db.closeConnection();

@@ -22,6 +22,7 @@ public interface DbStrategy {
     public void deleteById(String tableName, String primaryKeyName, Object primaryKeyValue) throws SQLException;
     public Map<String,Object> findRecord(String tableName,String columnName, Object primaryKeyValue) throws SQLException;
     public void insertRecord(String tableName,List<String> colNamesList, List<Object> colValuesList) throws SQLException;
+    public void UpdateRecord(String tableName, List<String> colNameList,List<Object> colValueList, String whereField, Object whereValue) throws SQLException;
     void openConnection(String driverClass, String url, String userName, String password) throws ClassNotFoundException, SQLException;
     
 }
