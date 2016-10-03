@@ -18,5 +18,7 @@ public interface AuthorDaoStrategy {
     public void deleteAuthorById(String id) throws Exception;
     public void createAuthor(String tableName,List<String> colNames,List<Object> colValues) throws Exception;
     public List<Author> getSpecificAuthor() throws SQLException, ClassNotFoundException;
+    public void updateAuthor(String tableName, List<String> colNameList, 
+            List<Object> colValueList, String whereField, Object whereValue) throws Exception;
     
 }

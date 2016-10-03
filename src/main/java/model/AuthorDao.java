@@ -86,7 +86,15 @@ public class AuthorDao implements AuthorDaoStrategy {
         
     }
     
-    
+    @Override
+    public void updateAuthor(String tableName, List<String> colNameList, 
+            List<Object> colValueList, String whereField, Object whereValue) throws Exception{
+        db.openConnection(driverClass, url, userName, password);
+        
+        db.UpdateRecord(tableName, colNameList, colValueList, whereField, whereValue);
+        
+        db.closeConnection();
+    }
     
     @Override
     public void deleteAuthorById(String id) throws Exception{
@@ -135,10 +143,11 @@ public class AuthorDao implements AuthorDaoStrategy {
         colNames.add("date_added");
        
         List<Object> colValues = new ArrayList<>();
-        colValues.add("Jose Fonseca");
-        colValues.add("2015-12-04");
+        colValues.add("Jose el Loco");
+        colValues.add("2015-12-02");
         
         dao.createAuthor("author", colNames, colValues);
+        dao.updateAuthor("author", colNames, colValues,"author_id", 8);
         
         System.out.println(authorRecord);
      

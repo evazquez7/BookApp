@@ -23,7 +23,10 @@ public class AuthorService  {
         this.dao = dao;
     }
    
-   
+    public void updateAuthor(String tableName, List<String> colNameList, 
+            List<Object> colValueList, String whereField, Object whereValue) throws Exception{
+        dao.updateAuthor(tableName, colNameList, colValueList, whereField, whereValue);
+    }
 
     public List<Author> getAuthorsList() 
             throws ClassNotFoundException, SQLException {
