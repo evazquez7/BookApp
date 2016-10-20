@@ -1,5 +1,6 @@
 package model;
 
+import java.io.Serializable;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -12,12 +13,14 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.StringJoiner;
+import javax.enterprise.context.Dependent;
 
 /**
  *
  * @author evazquez7
  */
-public class MySqlDbStrategy implements DbStrategy {
+@Dependent
+public class MySqlDbStrategy implements DbStrategy, Serializable {
     private Connection conn;
     
     @Override

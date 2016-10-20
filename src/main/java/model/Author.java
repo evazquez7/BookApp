@@ -14,25 +14,15 @@ import java.util.Objects;
  */
 public class Author {
     
-    private int authorId;
+    private Integer authorId;
     private String authorName;
     private Date dateAdded;
 
-    public Author(int authorId) throws IllegalArgumentException{
-        if(authorId < 0){
-            throw new IllegalArgumentException("Author Id needs to be greater than 0 ");
-        } else{
-        this.authorId = authorId;
-        }
-    }
 
     public Author() {
     }
 
-    public Author(int authorId, String authorName, Date dateAdded) throws IllegalArgumentException{
-        if (authorId < 0 || authorName == null || authorName.isEmpty() || dateAdded == null){
-            throw new IllegalArgumentException("AuthorId needs to be greater than 0, authorName cannot be empty or null and date cannot be null ");
-        }
+    public Author(Integer authorId, String authorName, Date dateAdded){
         this.authorId = authorId;
         this.authorName = authorName;
         this.dateAdded = dateAdded;
@@ -42,17 +32,13 @@ public class Author {
 
     
 
-    public int getAuthorId() {
+    public Integer getAuthorId() {
         return authorId;
     }
 
-    public void setAuthorId(int authorId) throws IllegalArgumentException {
-        
-        if(authorId < 0){
-            throw new IllegalArgumentException("Author Id needs to be greater than 0 ");
-        } else{
+    public void setAuthorId(Integer authorId) {
         this.authorId = authorId;
-        }
+        
     }
 
     public String getAuthorName() {
@@ -81,17 +67,19 @@ public class Author {
     public String toString() {
         return "Author{" + "authorId=" + authorId + ", authorName=" + authorName + ", dateAdded=" + dateAdded + '}';
     }
-    
-    
-    
+
+   
     @Override
     public int hashCode() {
-        int hash = 3;
-        hash = 67 * hash + this.authorId;
-        hash = 67 * hash + Objects.hashCode(this.authorName);
-        hash = 67 * hash + Objects.hashCode(this.dateAdded);
+        int hash = 7;
+        hash = 97 * hash + Objects.hashCode(this.authorId);
+        hash = 97 * hash + Objects.hashCode(this.authorName);
+        hash = 97 * hash + Objects.hashCode(this.dateAdded);
         return hash;
     }
+    
+    
+
 
     @Override
     public boolean equals(Object obj) {
@@ -105,10 +93,10 @@ public class Author {
             return false;
         }
         final Author other = (Author) obj;
-        if (this.authorId != other.authorId) {
+        if (!Objects.equals(this.authorName, other.authorName)) {
             return false;
         }
-        if (!Objects.equals(this.authorName, other.authorName)) {
+        if (!Objects.equals(this.authorId, other.authorId)) {
             return false;
         }
         if (!Objects.equals(this.dateAdded, other.dateAdded)) {
@@ -116,5 +104,7 @@ public class Author {
         }
         return true;
     }
+
+    
     
 }

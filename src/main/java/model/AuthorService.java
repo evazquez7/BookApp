@@ -5,64 +5,107 @@
  */
 package model;
 
+import java.io.Serializable;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import javax.enterprise.context.SessionScoped;
+import javax.inject.Inject;
 
 /**
  *
  * @author Emilio
  */
-public class AuthorService  {
-    
+@SessionScoped
+public class AuthorService implements Serializable {
+
+    @Inject
     private AuthorDaoStrategy dao;
-    
-    public AuthorService(AuthorDaoStrategy dao){
-        this.dao = dao;
-    }
-   
-    public void updateAuthor(String tableName, List<String> colNameList, 
-            List<Object> colValueList, String whereField, Object whereValue) throws Exception{
-        dao.updateAuthor(tableName, colNameList, colValueList, whereField, whereValue);
+
+    public AuthorService() {
+
     }
 
-    public List<Author> getAuthorsList() 
+
+    public List<Author> getAuthorsList()
             throws ClassNotFoundException, SQLException {
-        
-        return dao.getAuthorList();    
+
+        return dao.getAuthorList();
     }
-    
-    public void createAuthor(String tableName,List<String> colNames,List<Object> colValues) throws Exception{
-        dao.createAuthor(tableName, colNames, colValues);
-    }
-    
-    public void deleteAuthor(String id) 
-            throws Exception{
+
+    public void addOrEditAuthor(String authorId, String authorName) throws Exception {
+        Integer id = null;
         
+        if (authorId == null || authorId.equals(0)) {
+            id = null;
+            List<String> colNames = new ArrayList<>();
+            colNames.add("author_Name");
+            colNames.add("date_Added");
+            
+            List <Object> colValues = new ArrayList<>();
+            colValues.add(authorName);
+            colValues.add(new Date());
+            
+            dao.createAuthor(colNames, colValues);
+            
+        } else {
+            id = Integer.parseInt(authorId);
+            
+            
+            List<String> colNames = new ArrayList<>();
+            colNames.add("author_Name");
+
+            
+            List <Object> colValues = new ArrayList<>();
+            colValues.add(authorName);
+            
+            dao.updateAuthor(colNames, colValues,id);
+        }
+         
+        
+
+    }
+
+
+    public Author getAuthorbyId(String authorId) throws SQLException, ClassNotFoundException {
+         Author author = dao.getSpecificAuthor(Integer.parseInt(authorId));
+        return author;
+    }
+
+    public void deleteAuthor(String id)
+            throws Exception {
+
         dao.deleteAuthorById(id);
     }
-            
-    public static void main(String[] args) 
+
+    public AuthorDaoStrategy getDao() {
+        return dao;
+    }
+
+    public void setDao(AuthorDaoStrategy dao) {
+        this.dao = dao;
+    }
+
+    public static void main(String[] args)
             throws Exception {
-         
-        AuthorDaoStrategy dao = new AuthorDao(new MySqlDbStrategy(),
-                 "com.mysql.jdbc.Driver",
-                 "jdbc:mysql://localhost:3306/book?useSSL=false","root","admin");
-         
-         AuthorService service = new AuthorService(dao);
-         List<Author> authors = service.getAuthorsList();
-         System.out.println(authors);
-         service.deleteAuthor("6");
-         List<String> colNames = new ArrayList<>();
-        colNames.add("author_name");
-        colNames.add("date_added");
-       
-        List<Object> colValues = new ArrayList<>();
-        colValues.add("El Kocho");
-        colValues.add("2015-11-04");
-         service.createAuthor("author", colNames, colValues);
+
+//        AuthorDaoStrategy dao = new AuthorDao(new MySqlDbStrategy(),
+//                 "com.mysql.jdbc.Driver",
+//                 "jdbc:mysql://localhost:3306/book?useSSL=false","root","admin");
+////         
+//         AuthorService service = new AuthorService(dao);
+//         List<Author> authors = service.getAuthorsList();
+//         System.out.println(authors);
+//         service.deleteAuthor("6");
+//         List<String> colNames = new ArrayList<>();
+//        colNames.add("author_name");
+//        colNames.add("date_added");
+//       
+//        List<Object> colValues = new ArrayList<>();
+//        colValues.add("El Kocho");
+//        colValues.add("2015-11-04");
+//         service.createAuthor("author", colNames, colValues);
     }
 }
-

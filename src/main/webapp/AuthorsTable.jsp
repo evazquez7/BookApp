@@ -25,22 +25,26 @@
     <body>
         <div class="container">
         <h1>List of Authors</h1>
-        <table class="table table-hover table-responsive table-bordered">
-            <thead>
-            <th>Author Id</th>
-                <th>Author Name</th>
-                <th>Date</th>
-            </thead>
+        
+        <form method="POST" action="AuthorController?action=addEditDelete">
+            <input type="submit" value="AddEdit" name="submit">
+            <input type="submit" value="Delete" name="submit">
+            <table class="table table-hover table-responsive table-bordered">
+                <thead>
+                <th>Author Id</th>
+                    <th>Author Name</th>
+                    <th>Date</th>
+                </thead>
             
-            <c:forEach var="author" items="${authors}">
-                <tr>
-                    <td>${author.authorId}</td>
-                    <td>${author.authorName}</td>
-                    <td>${author.dateAdded}</td>
-                </tr>
-            </c:forEach>
-            
-        </table>
+                <c:forEach var="author" items="${authors}">
+                    <tr>
+                        <td><input type="checkbox" name="authorId" value="${author.authorId}"></td>
+                        <td>${author.authorName}</td>
+                        <td>${author.dateAdded}</td>
+                    </tr>
+                </c:forEach> 
+            </table>
+        </form>
         <a href="index.jsp">Home</a>
         </div>
         <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>   

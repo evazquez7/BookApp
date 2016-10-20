@@ -5,33 +5,37 @@
  */
 package model;
 
+import java.io.Serializable;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import javax.enterprise.context.Dependent;
+import javax.inject.Inject;
 
 /**
  *
  * @author Emilio
  */
-public class AuthorDao implements AuthorDaoStrategy {
+@Dependent
+public class AuthorDao implements AuthorDaoStrategy,Serializable {
+    
+    @Inject
     private DbStrategy db;
+    
+    
+    
     private String driverClass;
     private String url;
     private String userName;
     private String password;
 
-    public AuthorDao(DbStrategy db, String driverClass, String url, String userName, String password) {
-        this.db = db;
-        this.driverClass = driverClass;
-        this.url = url;
-        this.userName = userName;
-        this.password = password;
+    public AuthorDao() {
+      
     }
 
-   
-    
+ 
     @Override
     public List<Author> getAuthorList()
             throws ClassNotFoundException, SQLException{
@@ -51,49 +55,46 @@ public class AuthorDao implements AuthorDaoStrategy {
         }
         
         
-        db.closeConnection();
+
         
         return authors;
     }
     
     @Override
-    public List<Author> getSpecificAuthor() throws SQLException, ClassNotFoundException{
+    public Author getSpecificAuthor(Integer authorId) throws SQLException, ClassNotFoundException{
         db.openConnection(driverClass, url, userName, password);
-        Map<String,Object> record = db.findRecord("author", "author_id", 3);
-        List<Author> authorRecord = new ArrayList<>();
+        Map<String,Object> record = db.findRecord("author", "author_id", authorId);
         Author author = new Author();
-        int id =Integer.parseInt(record.get("author_id").toString());
-        author.setAuthorId(id);
-        String name = record.get("author_name").toString();
-        author.setAuthorName(name);
-        Date date = (Date)record.get("date_added");
-        author.setDateAdded(date);
-        authorRecord.add(author);
+        author.setAuthorId((Integer)record.get("author_id"));
+        author.setAuthorName(record.get("author_name").toString());
+        author.setDateAdded((Date)record.get("date_added"));
         
-        db.closeConnection();
+       
         
-        return authorRecord;
+        return author;
     }
     
+    
+    
     @Override 
-    public void createAuthor(String tableName,List<String> colNames,List<Object> colValues) throws Exception{
+    public void createAuthor(List<String> colNames,List<Object> colValues) throws Exception{
         db.openConnection(driverClass, url, userName, password);
+ 
+       
+        db.insertRecord("author", colNames, colValues);
         
         
-        db.insertRecord(tableName, colNames, colValues);
-        
-        db.closeConnection();
         
     }
     
     @Override
-    public void updateAuthor(String tableName, List<String> colNameList, 
-            List<Object> colValueList, String whereField, Object whereValue) throws Exception{
+    public void updateAuthor( List<String> colNameList, 
+            List<Object> colValueList, int id) throws Exception{
         db.openConnection(driverClass, url, userName, password);
         
-        db.UpdateRecord(tableName, colNameList, colValueList, whereField, whereValue);
+        db.UpdateRecord("author", colNameList, colValueList, "author_id", id );
         
-        db.closeConnection();
+       
     }
     
     @Override
@@ -103,7 +104,7 @@ public class AuthorDao implements AuthorDaoStrategy {
         Integer  primaryKeyValue = Integer.parseInt(id);
         db.deleteById("author", "author_id", primaryKeyValue);
         
-        db.closeConnection();
+
         
     }
     
@@ -119,37 +120,80 @@ public class AuthorDao implements AuthorDaoStrategy {
 //      return  recordDeleted;
 //    } 
     
+    @Override
+    public void initDao(String driverClass, String url, String userName, String password){
+        setDriverClass(driverClass);
+        setUrl(url);
+        setUserName(userName);
+        setPassword(password);
+    }
+    
+    
     public DbStrategy getDb() {
         return db;
     }
 
+    public String getDriverClass() {
+        return driverClass;
+    }
+
+    public String getUrl() {
+        return url;
+    }
+
+    public String getUserName() {
+        return userName;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+    
+    
+    
     public void setDb(DbStrategy db) {
         this.db = db;
+    }
+
+    public void setDriverClass(String driverClass) {
+        this.driverClass = driverClass;
+    }
+
+    public void setUrl(String url) {
+        this.url = url;
+    }
+
+    public void setUserName(String userName) {
+        this.userName = userName;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
     }
     
     
     public static void main(String[] args) 
             throws ClassNotFoundException, SQLException, Exception {
         
-        AuthorDaoStrategy dao =  new AuthorDao(new MySqlDbStrategy(),"com.mysql.jdbc.Driver",
-                "jdbc:mysql://localhost:3306/book?useSSL=false","root","admin");
+//        AuthorDaoStrategy dao =  new AuthorDao(new MySqlDbStrategy(),"com.mysql.jdbc.Driver",
+//                "jdbc:mysql://localhost:3306/book?useSSL=false","root","admin");
         
-        List<Author> authors = dao.getAuthorList();
-        List<Author> authorRecord = dao.getSpecificAuthor();
-        System.out.println(authors);
-        
-        List<String> colNames = new ArrayList<>();
-        colNames.add("author_name");
-        colNames.add("date_added");
-       
-        List<Object> colValues = new ArrayList<>();
-        colValues.add("Jose el Loco");
-        colValues.add("2015-12-02");
-        
-        dao.createAuthor("author", colNames, colValues);
-        dao.updateAuthor("author", colNames, colValues,"author_id", 8);
-        
-        System.out.println(authorRecord);
+//        List<Author> authors = dao.getAuthorList();
+//        List<Author> authorRecord = dao.getSpecificAuthor();
+//        System.out.println(authors);
+//        
+//        List<String> colNames = new ArrayList<>();
+//        colNames.add("author_name");
+//        colNames.add("date_added");
+//       
+//        List<Object> colValues = new ArrayList<>();
+//        colValues.add("Jose el Loco");
+//        colValues.add("2015-12-02");
+//        
+//        dao.createAuthor("author", colNames, colValues);
+//        dao.updateAuthor("author", colNames, colValues,"author_id", 8);
+//        
+//        System.out.println(authorRecord);
      
     }
 }

@@ -16,9 +16,10 @@ public interface AuthorDaoStrategy {
 
     List<Author> getAuthorList() throws ClassNotFoundException, SQLException;
     public void deleteAuthorById(String id) throws Exception;
-    public void createAuthor(String tableName,List<String> colNames,List<Object> colValues) throws Exception;
-    public List<Author> getSpecificAuthor() throws SQLException, ClassNotFoundException;
-    public void updateAuthor(String tableName, List<String> colNameList, 
-            List<Object> colValueList, String whereField, Object whereValue) throws Exception;
+    public void createAuthor(List<String> colNames,List<Object> colValues) throws Exception;
+    public Author getSpecificAuthor(Integer authorId) throws SQLException, ClassNotFoundException;
+    public void updateAuthor( List<String> colNameList, 
+            List<Object> colValueList, int whereValue) throws Exception;
+    public void initDao(String driverClass, String url, String userName, String password);
     
 }

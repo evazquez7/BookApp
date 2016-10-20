@@ -21,7 +21,7 @@
             <div class="col-xs-12">
                 <h1>Authors</h1>
             </div>
-            <a href="AuthorsTable.jsp">View All Authors</a>
+            <a href="AuthorController?action=list">View All Authors</a>
         </div>
         <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>   
     </body>

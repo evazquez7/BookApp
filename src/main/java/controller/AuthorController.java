@@ -8,6 +8,7 @@ package controller;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.List;
+import javax.inject.Inject;
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -27,6 +28,25 @@ import model.MySqlDbStrategy;
 @WebServlet(name = "AuthorController", urlPatterns = {"/AuthorController"})
 public class AuthorController extends HttpServlet {
 
+    
+    private static final String LIST_PAGE = "/AuthorsTable.jsp";
+    private static final String ADD_EDIT_PAGE = "/addEdit.jsp";
+    private static final String LIST_ACTION= "list";
+    private static final String ADD_EDIT_DELETE_ACTION = "addEditDelete";
+    private static final String SUBMIT_ACTION = "submit";
+    private static final String ACTION_PARAM = "action";
+    private static final String SAVE_ACTION = "Save";
+    private static final String CANCEL_ACTION = "Cancel";
+    private static final String ADD_EDIT_ACTION = "AddEdit";
+    
+    private String driverClass;
+    private String url;
+    private String userName;
+    private String password;
+    
+    @Inject
+    private AuthorService authService;
+        
     /**
      * Processes requests for both HTTP <code>GET</code> and <code>POST</code>
      * methods.
@@ -40,24 +60,87 @@ public class AuthorController extends HttpServlet {
             throws ServletException, IOException{
         response.setContentType("text/html;charset=UTF-8");
         
-        AuthorDaoStrategy dao = new AuthorDao(new MySqlDbStrategy(),
-                "com.mysql.jdbc.Driver",
-                "jdbc:mysql://localhost:3306/book?useSSL=false","root","admin");
-        
-        
-        AuthorService authorService = new AuthorService(dao);
+        String page = LIST_PAGE;
+        String action = request.getParameter(ACTION_PARAM);
        try {
-           
-       
-        List<Author> authors = authorService.getAuthorsList();
-        request.setAttribute("authors",authors);
+        configDbConnection();
+        
+        switch (action){
+            
+            case LIST_ACTION:
+                this.refreshList(request, authService);
+                page = LIST_PAGE;
+                break;
+            case ADD_EDIT_DELETE_ACTION:
+                String submitAction = request.getParameter(SUBMIT_ACTION);
+
+                if (submitAction.equals(ADD_EDIT_ACTION)){
+                    String[] authorIds = request.getParameterValues("authorId");
+                    
+                    if (authorIds == null) {
+
+                        
+                    } else {
+
+                        String authorId =  authorIds[0];
+                        Author author = authService.getAuthorbyId(authorId);
+                        request.setAttribute("author", author);
+                    }
+                    
+                    page = ADD_EDIT_PAGE;
+                    
+                } else {
+                    String[] authorIds = request.getParameterValues("authorId");
+                    for (String authorId : authorIds) {
+                        authService.deleteAuthor(authorId);
+                    }
+                    
+                    this.refreshList(request, authService);
+                    page = LIST_PAGE;
+                }
+                                
+                break;
+                
+            case SAVE_ACTION:
+                String authorName = request.getParameter("authorName");                
+                String authorId = request.getParameter("authorId");
+                authService.addOrEditAuthor(authorId, authorName);
+                this.refreshList(request, authService);
+                
+                page = LIST_PAGE;
+                
+                break;
+            
+            case CANCEL_ACTION: 
+                this.refreshList(request, authService);
+                page = LIST_PAGE;
+        }
+        
+        
        } catch(Exception e) {
         request.setAttribute("authors","Invalid");   
        } 
        
-        RequestDispatcher view = request.getRequestDispatcher("/AuthorsTable.jsp"); 
+        RequestDispatcher view = request.getRequestDispatcher(page); 
         view.forward(request, response);
     }
+    
+    private void configDbConnection(){
+      authService.getDao().initDao(driverClass, url, userName, password);
+      }
+    
+    private void refreshList(HttpServletRequest request, AuthorService authorService) throws Exception{
+        List<Author> authors = authorService.getAuthorsList();
+        request.setAttribute("authors", authors);
+    }
+    
+    @Override
+    public void init() throws ServletException {
+            driverClass = "com.mysql.jdbc.Driver";
+            url = "jdbc:mysql://localhost:3306/book?useSSL=false";
+            userName = "root";
+            password = "admin";
+        }
 
     // <editor-fold defaultstate="collapsed" desc="HttpServlet methods. Click on the + sign on the left to edit the code.">
     /**
