@@ -3,23 +3,28 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package controller;
+package edu.wctc.eav.bookwebapp.controller;
 
+import edu.wctc.eav.bookwebapp.service.AuthorFacade;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.sql.SQLException;
 import java.util.List;
 import javax.inject.Inject;
+import javax.naming.Context;
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import model.Author;
-import model.AuthorDao;
-import model.AuthorDaoStrategy;
-import model.AuthorService;
-import model.MySqlDbStrategy;
+import javax.sql.DataSource;
+import edu.wctc.eav.bookwebapp.entity.Author;
+import edu.wctc.eav.bookwebapp.entity.Book;
+import edu.wctc.eav.bookwebapp.service.BookFacade;
+import java.util.Date;
 
 /**
  *
@@ -28,25 +33,32 @@ import model.MySqlDbStrategy;
 @WebServlet(name = "AuthorController", urlPatterns = {"/AuthorController"})
 public class AuthorController extends HttpServlet {
 
-    
     private static final String LIST_PAGE = "/AuthorsTable.jsp";
-    private static final String ADD_EDIT_PAGE = "/addEdit.jsp";
-    private static final String LIST_ACTION= "list";
+    private static final String ADD_EDIT_PAGE = "/addEditAuthor.jsp";
+    private static final String LIST_ACTION = "list";
     private static final String ADD_EDIT_DELETE_ACTION = "addEditDelete";
     private static final String SUBMIT_ACTION = "submit";
     private static final String ACTION_PARAM = "action";
-    private static final String SAVE_ACTION = "Save";
+    private static final String ADD_ACTION = "Add";
+    private static final String UPDATE_ACTION = "Update";
     private static final String CANCEL_ACTION = "Cancel";
     private static final String ADD_EDIT_ACTION = "AddEdit";
-    
+
     private String driverClass;
     private String url;
     private String userName;
     private String password;
-    
+
+    private String dbJndiName;
+
+    //@Inject
+    //private AuthorService authService;
     @Inject
-    private AuthorService authService;
-        
+    private AuthorFacade authService;
+    
+    @Inject 
+    private BookFacade bookService;
+
     /**
      * Processes requests for both HTTP <code>GET</code> and <code>POST</code>
      * methods.
@@ -57,90 +69,96 @@ public class AuthorController extends HttpServlet {
      * @throws IOException if an I/O error occurs
      */
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException{
+            throws ServletException, IOException {
         response.setContentType("text/html;charset=UTF-8");
-        
+
         String page = LIST_PAGE;
         String action = request.getParameter(ACTION_PARAM);
-       try {
-        configDbConnection();
-        
-        switch (action){
-            
-            case LIST_ACTION:
-                this.refreshList(request, authService);
-                page = LIST_PAGE;
-                break;
-            case ADD_EDIT_DELETE_ACTION:
-                String submitAction = request.getParameter(SUBMIT_ACTION);
+        Author a = null;
+        try {
 
-                if (submitAction.equals(ADD_EDIT_ACTION)){
-                    String[] authorIds = request.getParameterValues("authorId");
-                    
-                    if (authorIds == null) {
+            switch (action) {
 
-                        
-                    } else {
-
-                        String authorId =  authorIds[0];
-                        Author author = authService.getAuthorbyId(authorId);
-                        request.setAttribute("author", author);
-                    }
-                    
-                    page = ADD_EDIT_PAGE;
-                    
-                } else {
-                    String[] authorIds = request.getParameterValues("authorId");
-                    for (String authorId : authorIds) {
-                        authService.deleteAuthor(authorId);
-                    }
-                    
-                    this.refreshList(request, authService);
+                case LIST_ACTION:
+                    this.refreshAuthorList(request);
                     page = LIST_PAGE;
-                }
-                                
-                break;
-                
-            case SAVE_ACTION:
-                String authorName = request.getParameter("authorName");                
-                String authorId = request.getParameter("authorId");
-                authService.addOrEditAuthor(authorId, authorName);
-                this.refreshList(request, authService);
-                
-                page = LIST_PAGE;
-                
-                break;
-            
-            case CANCEL_ACTION: 
-                this.refreshList(request, authService);
-                page = LIST_PAGE;
+                    break;
+                case ADD_EDIT_DELETE_ACTION:
+                    String submitAction = request.getParameter(SUBMIT_ACTION);
+
+                    if (submitAction.equals(ADD_EDIT_ACTION)) {
+                        String[] authorIds = request.getParameterValues("authorId");
+
+                        if (authorIds == null) {
+
+                        } else {
+
+                            String authorId = authorIds[0];
+                             a = authService.find(new Integer(authorId));
+                            request.setAttribute("author", a);
+                        }
+
+                        page = ADD_EDIT_PAGE;
+
+                    } else {
+                        String[] authorIds = request.getParameterValues("authorId");
+                        for (String authorId : authorIds) {
+                            a = authService.find(new Integer(authorId));
+                            authService.remove(a);
+                        }
+
+                        this.refreshAuthorList(request);
+                        page = LIST_PAGE;
+                    }
+
+                    break;
+
+                case ADD_ACTION:
+                    String authorName = request.getParameter("authorName");
+
+                    Author author = new Author();
+                    author.setAuthorName(authorName);
+                    author.setDateAdded(new Date());
+                    authService.create(author);
+                    
+                    
+                    this.refreshAuthorList(request);
+
+                    page = LIST_PAGE;
+
+                    break;
+                case UPDATE_ACTION:
+                    String name = request.getParameter("authorName");
+                    String authorId = request.getParameter("authorId");
+
+                    a = authService.find(new Integer(authorId));
+                    a.setAuthorName(name);
+                    authService.edit(a);
+
+                case CANCEL_ACTION:
+                    this.refreshAuthorList(request);
+                    page = LIST_PAGE;
+            }
+
+        } catch (Exception e) {
+            request.setAttribute("authors", "Invalid");
         }
-        
-        
-       } catch(Exception e) {
-        request.setAttribute("authors","Invalid");   
-       } 
-       
-        RequestDispatcher view = request.getRequestDispatcher(page); 
+
+        RequestDispatcher view = request.getRequestDispatcher(page);
         view.forward(request, response);
     }
-    
-    private void configDbConnection(){
-      authService.getDao().initDao(driverClass, url, userName, password);
-      }
-    
-    private void refreshList(HttpServletRequest request, AuthorService authorService) throws Exception{
-        List<Author> authors = authorService.getAuthorsList();
+
+    private void refreshAuthorList(HttpServletRequest request) throws Exception {
+        List<Author> authors = authService.findAll();
         request.setAttribute("authors", authors);
     }
+
     
+
     @Override
     public void init() throws ServletException {
-            driverClass = "com.mysql.jdbc.Driver";
-            url = "jdbc:mysql://localhost:3306/book?useSSL=false";
-            userName = "root";
-            password = "admin";
-        }
+
+    }
 
     // <editor-fold defaultstate="collapsed" desc="HttpServlet methods. Click on the + sign on the left to edit the code.">
     /**

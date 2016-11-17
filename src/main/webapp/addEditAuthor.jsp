@@ -15,6 +15,7 @@
         <title>Add or Edit Author</title>
     </head>
     <body>
+
         <h1>Add or Edit Author</h1>
 
         <form method="POST" action="AuthorController">
@@ -26,23 +27,42 @@
 
                 </c:when>
             </c:choose>
-
-
             <label for="name">Name</label>
             <input type="text" name="authorName" value="${author.authorName}"> 
 
-            <c:choose>    
+            <c:choose>
                 <c:when test="${not empty author}">
 
                     <label for="name">Date Added</label>
                     <input type="text" name="dateAdded" value="${author.dateAdded}" readonly/>  
 
                 </c:when>
+
+            </c:choose>
+            <c:choose>
+                <c:when test="${not empty author.bookCollection}">
+
+                    <c:forEach var="book" items="${author.bookCollection}">
+                        <select id="bookDropDown" name="bookId">
+                            <label for="bookTitle">Book Title</label>
+                            <option value="${book.bookId}">${book.title}</option>
+                        </select>
+                    </c:forEach>
+                </c:when>
+
+            </c:choose>
+
+            <c:choose>
+                <c:when test="${empty author}">
+                    <input type="submit" value="Add" name="action">
+                </c:when>
+                <c:otherwise>
+                    <input type="submit" value="Update" name="action">
+                </c:otherwise>
             </c:choose>
 
 
 
-            <input type="submit" value="Save" name="action">
             <input type="submit" value="Cancel" name="action">  
 
         </form>
